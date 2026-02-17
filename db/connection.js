@@ -34,4 +34,11 @@ function collection(table) {
   return col;
 }
 
-module.exports = { dbConnect, dbCollection, collection };
+async function dbClose() {
+  if (dbClient) {
+    await dbClient.close();
+    dbClient = null;
+  }
+}
+
+module.exports = { dbConnect, dbClose, dbCollection, collection };

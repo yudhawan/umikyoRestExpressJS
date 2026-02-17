@@ -2,19 +2,19 @@ const { Field } = require("../db/services");
 const { sendErrorResponse } = require("../libs/errorHandler");
 
 async function getStatusOrder(req, res) {
-  const id = req.body;
+  const id = req.query.id;
   if (!id) {
-    sendErrorResponse(res, "Not Found", 405);
+    sendErrorResponse(res, "Missing required query parameter: id", 400);
     return;
   }
 
-  const newCollection = new Field("Testing");
-  const result = await newCollection.getMany("id", id);
+  const orderCollection = new Field("Orders");
+  const result = await orderCollection.getMany("id", id);
 
   if (result.length > 0) {
     res.json(result);
   } else {
-    sendErrorResponse(res, "Not Found", 405);
+    sendErrorResponse(res, "Order not found", 404);
   }
 }
 

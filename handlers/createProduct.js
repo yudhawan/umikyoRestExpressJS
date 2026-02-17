@@ -4,20 +4,19 @@ const { responseSuccess } = require("../libs/successHandler");
 
 async function createProduct(req, res) {
   const product = req.body;
-  if (!product) {
-    sendErrorResponse(res, "Error decode product", 400);
+
+  if (!product || !product.name || product.price == null) {
+    sendErrorResponse(res, "Missing required fields: name, price", 400);
     return;
   }
 
-  console.log(JSON.stringify(product));
-
   product.created_date = new Date();
-  const obj = new Field("Testing");
+  const obj = new Field("Products");
   try {
     await obj.insert(product);
     res.json(responseSuccess(product));
   } catch (err) {
-    sendErrorResponse(res, "Failed to add Data", 405);
+    sendErrorResponse(res, "Failed to add product", 500);
   }
 }
 

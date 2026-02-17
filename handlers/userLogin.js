@@ -1,21 +1,26 @@
 const bcrypt = require("bcryptjs");
 const { Field } = require("../db/services");
 const { sendErrorResponse } = require("../libs/errorHandler");
+const { generateToken } = require("../libs/tokenHandler");
 
 async function userLogin(req, res) {
-  console.log("Login Terrr");
-  const userBody = req.body;
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    sendErrorResponse(res, "Missing required fields: email, password", 400);
+    return;
+  }
+
   const userField = new Field("Users");
-  console.log(`Data : ${JSON.stringify(userBody)}`);
-  const row = await userField.getOne("email", userBody.email);
+  const row = await userField.getOne("email", email);
 
   if (row) {
     try {
-      const match = await bcrypt.compare(userBody.password, row.password);
+      const match = await bcrypt.compare(password, row.password);
       if (match) {
-        const token = "tokeeeen";
-        const userAuthenticated = { user_data: row, token: token };
-        res.json(userAuthenticated);
+        const token = generateToken(email);
+        const { password: _, ...userData } = row;
+        res.json({ user_data: userData, token });
         return;
       }
     } catch (err) {
@@ -23,7 +28,7 @@ async function userLogin(req, res) {
     }
   }
 
-  sendErrorResponse(res, "Authentication Failed", 500);
+  sendErrorResponse(res, "Authentication Failed", 401);
 }
 
 module.exports = userLogin;

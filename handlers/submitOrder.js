@@ -13,32 +13,33 @@ async function checkingStockItem(id) {
 
 async function submitOrder(req, res) {
   const orderData = req.body;
-  if (!orderData) {
-    sendErrorResponse(res, "", 403);
+
+  if (!orderData || !orderData.products || !Array.isArray(orderData.products)) {
+    sendErrorResponse(res, "Missing required field: products (array)", 400);
     return;
   }
 
-  const dbase = new Field("Testing");
+  const dbase = new Field("Orders");
   const emptyStock = [];
 
-  if (orderData.products) {
-    for (const val of orderData.products) {
-      const inStock = await checkingStockItem(val.id);
-      if (!inStock) {
-        emptyStock.push(val);
-      }
+  for (const val of orderData.products) {
+    const inStock = await checkingStockItem(val.id);
+    if (!inStock) {
+      emptyStock.push(val);
     }
   }
+
+  orderData.created_date = new Date();
 
   try {
     await dbase.insert(orderData);
   } catch (err) {
-    sendErrorResponse(res, "", 403);
+    sendErrorResponse(res, "Failed to submit order", 500);
     return;
   }
 
   if (emptyStock.length > 0) {
-    res.json(emptyStock);
+    res.json({ warning: "Some items are out of stock", out_of_stock: emptyStock, order: orderData });
   } else {
     res.json(responseSuccess(orderData));
   }

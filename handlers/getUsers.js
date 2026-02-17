@@ -5,18 +5,19 @@ async function getUsers(req, res) {
   const data = new Field("Users");
   const users = await data.getAll();
 
+  const sanitizedUsers = users.map(({ password, ...user }) => user);
+
   const response = {
-    length: users.length,
+    length: sanitizedUsers.length,
     page: 1,
     offset: 0,
-    users: users,
+    users: sanitizedUsers,
   };
 
-  res.setHeader("Content-Type", "application/json");
   try {
     res.json(response);
   } catch (err) {
-    sendErrorResponse(res, "Error when encoding response", 502);
+    sendErrorResponse(res, "Error when encoding response", 500);
   }
 }
 

@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const { authorization } = require("../middleware/authorization");
 const registerUser = require("../handlers/registerUser");
 const userLogin = require("../handlers/userLogin");
 const getUsers = require("../handlers/getUsers");
@@ -13,20 +14,23 @@ const getStatusOrder = require("../handlers/getStatusOrder");
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json("Terrrrr");
+router.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Public routes
 router.post("/registerUser", registerUser);
-router.get("/getUsers", getUsers);
 router.post("/userLogin", userLogin);
-router.post("/addProduct", createProduct);
-router.post("/addCategory", createCategory);
-router.get("/getProducts", getProducts);
-router.get("/getCategories", getCategories);
-router.post("/submitOrder", submitOrder);
-router.get("/getStatusOrder", getStatusOrder);
-router.post("/changeStatUser", changeStatUser);
 router.post("/validationToken", validationToken);
+
+// Protected routes
+router.get("/getUsers", authorization, getUsers);
+router.post("/changeStatUser", authorization, changeStatUser);
+router.post("/addProduct", authorization, createProduct);
+router.get("/getProducts", authorization, getProducts);
+router.post("/addCategory", authorization, createCategory);
+router.get("/getCategories", authorization, getCategories);
+router.post("/submitOrder", authorization, submitOrder);
+router.get("/getStatusOrder", authorization, getStatusOrder);
 
 module.exports = router;
